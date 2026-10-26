@@ -10,10 +10,3 @@ I used MySQL to analyze the Olist e-commerce dataset and explore sales, customer
 - **Delivery Performance:** Average delivery time and late-delivery rates
 - **Customer Reviews:** Review scores across product categories
 
-## SQL Files
-
-- `01_kpi_summary.sql` – Business KPIs
-- `02_Sales_and_Categories.sql` – Sales trends and product categories
-- `03_Payment_Analysis.sql` – Payment methods and installments
-- `04_Customer_and_Region_anlysis.sql` – Customer retention and regional revenue
-- `05_Delivery_and_Reviews.sql` – Delivery performance and customer reviews
