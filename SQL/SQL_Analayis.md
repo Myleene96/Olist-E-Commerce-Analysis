@@ -98,6 +98,12 @@ The dataset contains information about orders, customers, products, sellers, pay
 - **Python:** Data cleaning, exploratory data analysis (EDA), and visualization.
 - **Tableau:** Interactive dashboards and business insight visualization.
 
+  
+- Tableau Dashboard
+
+The interactive Tableau dashboard presents key business insights through visualizations covering sales performance, customer behavior, payment preferences, delivery performance, and customer satisfaction.
+https://public.tableau.com/shared/NMKN2JB6F?:display_count=n&:origin=viz_share_link
+
 ## Key Findings
 
 - **Customer Retention:** Only 3.12% of customers made repeat purchases.
