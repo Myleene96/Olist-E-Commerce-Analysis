@@ -372,5 +372,112 @@ ORDER BY total_products DESC;
 
 
 
+-- 08. CREATE SQL VIEWS FOR TABLEAU ANALYSIS
+
+
+-- One row per ITEM
+-- Used for revenue, product categories, and seller analysis
+
+CREATE OR REPLACE VIEW v_order_items AS
+SELECT
+    oi.order_id,
+    oi.order_item_id,
+    o.order_status,
+    o.order_purchase_timestamp,
+    oi.price,
+    oi.freight_value,
+    oi.seller_id,
+    s.seller_state,
+    cu.customer_unique_id,
+    cu.customer_state,
+    COALESCE(t.product_category_name_english, 'unknown') AS category
+FROM order_items oi
+JOIN orders o
+    ON o.order_id = oi.order_id
+JOIN customers cu
+    ON cu.customer_id = o.customer_id
+LEFT JOIN products_cleaned p
+    ON p.product_id = oi.product_id
+LEFT JOIN category_translation t
+    ON t.product_category_name = p.product_category_name
+LEFT JOIN sellers s
+    ON s.seller_id = oi.seller_id;
+
+
+-- One row per ORDER
+-- Used for order, delivery, review, and customer analysis
+
+CREATE OR REPLACE VIEW v_orders AS
+SELECT
+    o.order_id,
+    o.order_status,
+    o.order_purchase_timestamp,
+    o.order_delivered_customer_date,
+    o.order_estimated_delivery_date,
+    cu.customer_unique_id,
+    cu.customer_state,
+    pay.total_paid,
+    rev.review_score,
+
+    CASE
+        WHEN o.order_delivered_customer_date IS NOT NULL
+        THEN TIMESTAMPDIFF(
+            SECOND,
+            o.order_purchase_timestamp,
+            o.order_delivered_customer_date
+        ) / 86400
+    END AS delivery_days,
+
+    CASE
+        WHEN o.order_delivered_customer_date IS NULL THEN NULL
+        WHEN o.order_delivered_customer_date > o.order_estimated_delivery_date THEN 1
+        ELSE 0
+    END AS is_late,
+
+    COUNT(*) OVER (
+        PARTITION BY cu.customer_unique_id
+    ) AS customer_total_orders
+
+FROM orders o
+JOIN customers cu
+    ON cu.customer_id = o.customer_id
+LEFT JOIN (
+    SELECT
+        order_id,
+        SUM(payment_value) AS total_paid
+    FROM payments
+    GROUP BY order_id
+) pay
+    ON pay.order_id = o.order_id
+LEFT JOIN (
+    SELECT
+        order_id,
+        AVG(review_score) AS review_score
+    FROM reviews
+    GROUP BY order_id
+) rev
+    ON rev.order_id = o.order_id;
+
+
+-- One row per PAYMENT
+-- Used for payment type and installment analysis
+
+CREATE OR REPLACE VIEW v_payments AS
+SELECT
+    p.order_id,
+    p.payment_sequential,
+    p.payment_type,
+    p.payment_installments,
+    p.payment_value,
+    o.order_purchase_timestamp,
+    cu.customer_state
+FROM payments p
+JOIN orders o
+    ON o.order_id = p.order_id
+JOIN customers cu
+    ON cu.customer_id = o.customer_id;
+
+
+
 -- END OF DATA PREPARATION
 
